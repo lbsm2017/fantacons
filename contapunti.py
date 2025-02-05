@@ -11,6 +11,11 @@ consiglieri = [
     "Jole Capriglia Sesia (Min)", "Floriana Tollini (Mag)"
 ]
 
+# Separazione dei consiglieri per ruolo
+maggioranza = [c for c in consiglieri if "(Mag)" in c and c != "Betta Giordani (Mag)"]
+minoranza = [c for c in consiglieri if "(Min)" in c]
+sindaco = "Betta Giordani (Mag)"
+
 # Bonus e Malus con i relativi punteggi
 bonus = {
     "Si prenota a parlare per primo": 2,
@@ -51,39 +56,60 @@ if 'cronologia' not in st.session_state:
 # Titolo dell'app
 st.title("Control Room FantaConsiglio")
 
-# Selezione del consigliere con pulsante per cancellare l'ultima azione
-col1, col2 = st.columns([3, 1])
+# Layout con tre colonne: Maggioranza, Sindaco, Minoranza
+col1, col2, col3 = st.columns([3, 1, 3])
+
+# Maggioranza
 with col1:
-    consigliere_selezionato = st.selectbox("Seleziona un Consigliere:", consiglieri)
+    st.subheader("Maggioranza")
+    for consigliere in maggioranza:
+        if st.button(consigliere, key=f"maggioranza_{consigliere}"):
+            st.session_state.selezionato = consigliere
+
+# Sindaco
 with col2:
-    if st.button("Cancella Ultimo") and st.session_state.cronologia:
-        ultima_azione = st.session_state.cronologia.pop()
-        st.session_state.punteggi[ultima_azione['consigliere']] -= ultima_azione['punteggio']
-        st.warning(f"Annullata l'azione '{ultima_azione['azione']}' per {ultima_azione['consigliere']}.")
+    st.subheader("Sindaco")
+    if st.button(sindaco, key="sindaco"):
+        st.session_state.selezionato = sindaco
+
+# Minoranza
+with col3:
+    st.subheader("Minoranza")
+    for consigliere in minoranza:
+        if st.button(consigliere, key=f"minoranza_{consigliere}"):
+            st.session_state.selezionato = consigliere
+
+# Pulsante per cancellare l'ultima azione
+if st.button("Cancella Ultimo") and st.session_state.cronologia:
+    ultima_azione = st.session_state.cronologia.pop()
+    st.session_state.punteggi[ultima_azione['consigliere']] -= ultima_azione['punteggio']
+    st.warning(f"Annullata l'azione '{ultima_azione['azione']}' per {ultima_azione['consigliere']}.")
 
 # Sezione Bonus
 st.subheader("Bonus")
 for azione, punteggio in bonus.items():
     if st.button(azione, key=f"bonus_{azione}"):
-        st.session_state.punteggi[consigliere_selezionato] += punteggio
-        st.session_state.cronologia.append({
-            'consigliere': consigliere_selezionato,
-            'azione': azione,
-            'punteggio': punteggio
-        })
-        st.success(f"Azione '{azione}' (+{punteggio}) assegnata a {consigliere_selezionato}!")
+        if 'selezionato' in st.session_state:
+            st.session_state.punteggi[st.session_state.selezionato] += punteggio
+            st.session_state.cronologia.append({
+                'consigliere': st.session_state.selezionato,
+                'azione': azione,
+                'punteggio': punteggio
+            })
+            st.success(f"Azione '{azione}' (+{punteggio}) assegnata a {st.session_state.selezionato}!")
 
 # Sezione Malus
 st.subheader("Malus")
 for azione, punteggio in malus.items():
     if st.button(azione, key=f"malus_{azione}"):
-        st.session_state.punteggi[consigliere_selezionato] += punteggio
-        st.session_state.cronologia.append({
-            'consigliere': consigliere_selezionato,
-            'azione': azione,
-            'punteggio': punteggio
-        })
-        st.error(f"Azione '{azione}' ({punteggio}) assegnata a {consigliere_selezionato}!")
+        if 'selezionato' in st.session_state:
+            st.session_state.punteggi[st.session_state.selezionato] += punteggio
+            st.session_state.cronologia.append({
+                'consigliere': st.session_state.selezionato,
+                'azione': azione,
+                'punteggio': punteggio
+            })
+            st.error(f"Azione '{azione}' ({punteggio}) assegnata a {st.session_state.selezionato}!")
 
 # Dashboard dei punteggi
 st.header("Dashboard Punteggi")
