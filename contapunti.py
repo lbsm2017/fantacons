@@ -107,9 +107,14 @@ if st.button("CANCELLA ULTIMO", key="cancella_ultimo", help="Annulla l'ultima az
         st.session_state.punteggi[ultima_azione['consigliere']] -= ultima_azione['punteggio']
         st.warning(f"Annullata l'azione '{ultima_azione['azione']}' per {ultima_azione['consigliere']}.")
 
-# Stile per il pulsante CANCELLA ULTIMO
+# Stile per i bottoni
 st.markdown("""
     <style>
+    div[data-testid="stButton"] button {
+        background-color: white !important;
+        color: black !important;
+        font-weight: normal;
+    }
     div[data-testid="stButton"] button[kind="secondary"] {
         background-color: red !important;
         color: white !important;
