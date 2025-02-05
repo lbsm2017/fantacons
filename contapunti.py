@@ -69,9 +69,7 @@ for i, consigliere in enumerate(maggioranza + [sindaco] + minoranza):
             st.session_state.selezionato = consigliere
 
 # Pulsante per cancellare l'ultima azione
-if st.button("Cancella Ultimo", key="cancella_ultimo", help="Annulla l'ultima azione", 
-             args=None, kwargs=None, disabled=False, use_container_width=False, 
-             type="primary"):
+if st.button("Cancella Ultimo", key="cancella_ultimo"):
     if st.session_state.cronologia:
         ultima_azione = st.session_state.cronologia.pop()
         st.session_state.punteggi[ultima_azione['consigliere']] -= ultima_azione['punteggio']
@@ -114,11 +112,13 @@ punteggi_df = punteggi_df.sort_values(by='Punteggio', ascending=False)
 
 st.dataframe(punteggi_df, use_container_width=True)
 
-# Reset dei punteggi con conferma
-if st.button("Reset Punteggi", key="reset_punteggi", help="Resetta tutti i punteggi", 
-             args=None, kwargs=None, disabled=False, use_container_width=False, 
-             type="primary"):
-    if st.confirm("Sei sicuro di voler resettare i punteggi?"):
+# Reset dei punteggi con conferma tramite dialog
+@st.dialog("Sei sicuro di voler resettare i punteggi?")
+def reset_punteggi():
+    if st.button("Conferma Reset", key="conferma_reset"):
         st.session_state.punteggi = {consigliere: 0 for consigliere in consiglieri}
         st.session_state.cronologia = []
         st.success("Punteggi resettati!")
+
+if st.button("Reset Punteggi", key="reset_punteggi"):
+    reset_punteggi()
