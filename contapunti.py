@@ -139,10 +139,13 @@ for i, (azione, punteggio) in enumerate(malus.items()):
 
 # Dashboard dei punteggi
 st.header("Dashboard Punteggi")
-punteggi_df = pd.DataFrame(list(st.session_state.punteggi.items()), columns=['Consigliere', 'Punteggio'])
-punteggi_df = punteggi_df.sort_values(by='Punteggio', ascending=False)
 
-st.dataframe(punteggi_df, use_container_width=True)
+def aggiorna_punteggi():
+    punteggi_df = pd.DataFrame(list(st.session_state.punteggi.items()), columns=['Consigliere', 'Punteggio'])
+    punteggi_df = punteggi_df.sort_values(by='Punteggio', ascending=False)
+    st.dataframe(punteggi_df, use_container_width=True)
+
+aggiorna_punteggi()
 
 # Reset dei punteggi con conferma tramite dialog
 @st.dialog("Sei sicuro di voler resettare i punteggi?")
@@ -151,6 +154,7 @@ def reset_punteggi():
         st.session_state.punteggi = {consigliere: 0 for consigliere in consiglieri}
         st.session_state.cronologia = []
         st.success("Punteggi resettati!")
+        aggiorna_punteggi()
 
 if st.button("Reset Punteggi", key="reset_punteggi"):
     reset_punteggi()
