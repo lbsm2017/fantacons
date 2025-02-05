@@ -41,21 +41,36 @@ malus = {
     "Getta i fogli sul banco in segno di stizza": -4
 }
 
-# Inizializzazione del punteggio
+# Inizializzazione del punteggio e della cronologia delle azioni
 if 'punteggi' not in st.session_state:
     st.session_state.punteggi = {consigliere: 0 for consigliere in consiglieri}
+
+if 'cronologia' not in st.session_state:
+    st.session_state.cronologia = []
 
 # Titolo dell'app
 st.title("Control Room FantaConsiglio")
 
-# Selezione del consigliere
-consigliere_selezionato = st.selectbox("Seleziona un Consigliere:", consiglieri)
+# Selezione del consigliere con pulsante per cancellare l'ultima azione
+col1, col2 = st.columns([3, 1])
+with col1:
+    consigliere_selezionato = st.selectbox("Seleziona un Consigliere:", consiglieri)
+with col2:
+    if st.button("Cancella Ultimo") and st.session_state.cronologia:
+        ultima_azione = st.session_state.cronologia.pop()
+        st.session_state.punteggi[ultima_azione['consigliere']] -= ultima_azione['punteggio']
+        st.warning(f"Annullata l'azione '{ultima_azione['azione']}' per {ultima_azione['consigliere']}.")
 
 # Sezione Bonus
 st.subheader("Bonus")
 for azione, punteggio in bonus.items():
     if st.button(azione, key=f"bonus_{azione}"):
         st.session_state.punteggi[consigliere_selezionato] += punteggio
+        st.session_state.cronologia.append({
+            'consigliere': consigliere_selezionato,
+            'azione': azione,
+            'punteggio': punteggio
+        })
         st.success(f"Azione '{azione}' (+{punteggio}) assegnata a {consigliere_selezionato}!")
 
 # Sezione Malus
@@ -63,6 +78,11 @@ st.subheader("Malus")
 for azione, punteggio in malus.items():
     if st.button(azione, key=f"malus_{azione}"):
         st.session_state.punteggi[consigliere_selezionato] += punteggio
+        st.session_state.cronologia.append({
+            'consigliere': consigliere_selezionato,
+            'azione': azione,
+            'punteggio': punteggio
+        })
         st.error(f"Azione '{azione}' ({punteggio}) assegnata a {consigliere_selezionato}!")
 
 # Dashboard dei punteggi
@@ -75,4 +95,5 @@ st.dataframe(punteggi_df, use_container_width=True)
 # Reset dei punteggi
 if st.button("Reset Punteggi"):
     st.session_state.punteggi = {consigliere: 0 for consigliere in consiglieri}
+    st.session_state.cronologia = []
     st.success("Punteggi resettati!")
