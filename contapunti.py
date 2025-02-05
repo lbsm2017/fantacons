@@ -1,6 +1,9 @@
 import streamlit as st
 import pandas as pd
 
+# Configurazione full screen
+st.set_page_config(layout="wide")
+
 # Lista dei consiglieri
 consiglieri = [
     "Leonardo Balzarini (Mag)", "Mario Boatto (Min)", "Giorgio Circosta (Mag)",
@@ -56,27 +59,13 @@ if 'cronologia' not in st.session_state:
 # Titolo dell'app
 st.title("Control Room FantaConsiglio")
 
-# Layout con tre colonne: Maggioranza, Sindaco, Minoranza
-col1, col2, col3 = st.columns([3, 1, 3])
+# Layout per i consiglieri
+st.write("### Seleziona un Consigliere")
+cols = st.columns(4)
 
-# Maggioranza
-with col1:
-    st.subheader("Maggioranza")
-    for consigliere in maggioranza:
-        if st.button(consigliere, key=f"maggioranza_{consigliere}"):
-            st.session_state.selezionato = consigliere
-
-# Sindaco
-with col2:
-    st.subheader("Sindaco")
-    if st.button(sindaco, key="sindaco"):
-        st.session_state.selezionato = sindaco
-
-# Minoranza
-with col3:
-    st.subheader("Minoranza")
-    for consigliere in minoranza:
-        if st.button(consigliere, key=f"minoranza_{consigliere}"):
+for i, consigliere in enumerate(maggioranza + [sindaco] + minoranza):
+    with cols[i % 4]:
+        if st.button(consigliere, key=f"consigliere_{consigliere}"):
             st.session_state.selezionato = consigliere
 
 # Pulsante per cancellare l'ultima azione
@@ -86,30 +75,34 @@ if st.button("Cancella Ultimo") and st.session_state.cronologia:
     st.warning(f"Annullata l'azione '{ultima_azione['azione']}' per {ultima_azione['consigliere']}.")
 
 # Sezione Bonus
-st.subheader("Bonus")
-for azione, punteggio in bonus.items():
-    if st.button(azione, key=f"bonus_{azione}"):
-        if 'selezionato' in st.session_state:
-            st.session_state.punteggi[st.session_state.selezionato] += punteggio
-            st.session_state.cronologia.append({
-                'consigliere': st.session_state.selezionato,
-                'azione': azione,
-                'punteggio': punteggio
-            })
-            st.success(f"Azione '{azione}' (+{punteggio}) assegnata a {st.session_state.selezionato}!")
+st.write("### Bonus")
+bonus_cols = st.columns(6)
+for i, (azione, punteggio) in enumerate(bonus.items()):
+    with bonus_cols[i % 6]:
+        if st.button(azione, key=f"bonus_{azione}"):
+            if 'selezionato' in st.session_state:
+                st.session_state.punteggi[st.session_state.selezionato] += punteggio
+                st.session_state.cronologia.append({
+                    'consigliere': st.session_state.selezionato,
+                    'azione': azione,
+                    'punteggio': punteggio
+                })
+                st.success(f"Azione '{azione}' (+{punteggio}) assegnata a {st.session_state.selezionato}!")
 
 # Sezione Malus
-st.subheader("Malus")
-for azione, punteggio in malus.items():
-    if st.button(azione, key=f"malus_{azione}"):
-        if 'selezionato' in st.session_state:
-            st.session_state.punteggi[st.session_state.selezionato] += punteggio
-            st.session_state.cronologia.append({
-                'consigliere': st.session_state.selezionato,
-                'azione': azione,
-                'punteggio': punteggio
-            })
-            st.error(f"Azione '{azione}' ({punteggio}) assegnata a {st.session_state.selezionato}!")
+st.write("### Malus")
+malus_cols = st.columns(6)
+for i, (azione, punteggio) in enumerate(malus.items()):
+    with malus_cols[i % 6]:
+        if st.button(azione, key=f"malus_{azione}"):
+            if 'selezionato' in st.session_state:
+                st.session_state.punteggi[st.session_state.selezionato] += punteggio
+                st.session_state.cronologia.append({
+                    'consigliere': st.session_state.selezionato,
+                    'azione': azione,
+                    'punteggio': punteggio
+                })
+                st.error(f"Azione '{azione}' ({punteggio}) assegnata a {st.session_state.selezionato}!")
 
 # Dashboard dei punteggi
 st.header("Dashboard Punteggi")
